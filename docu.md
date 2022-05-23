@@ -5,6 +5,12 @@ from cassandra.policies import DCAwareRoundRobinPolicy , WhiteListRoundRobinPoli
 from cassandra.cluster import ExecutionProfile
 from cassandra.cqlengine.management import query
 from cassandra.query import BatchStatement, SimpleStatement, ValueSequence
+import uuid
+from cassandra.cqlengine import columns
+from cassandra.cqlengine import connection
+from datetime import datetime
+from cassandra.cqlengine.management import sync_table
+from cassandra.cqlengine.models import Model
 ```
 
 ```java
@@ -18,7 +24,10 @@ DseCluster cluster = DseCluster.builder().
 
 ```python
 # python
-
+exec_profile =ExecutionProfile(load_balancing_policy=..., retry_policy=..., )
+cluster = Cluster(contact_points=contact_points, execution_profiles=\
+    {"node1": exec_prof},reconnection_policy=... , )
+session = cluster.connect(wait_for_all_pools=False) # True | False
 ```
 
 ```java
@@ -112,7 +121,51 @@ bound = prepared.bind(("234827", "Mouse"));
 bound = prepared.bind({"sku": "234827", "description": "Mouse"}); 
 session.execute(bound); 
 ```
+```java
+// java
+@UDT(name="address")
+public class Address{
+    private String street;
+    private String city;
+    private int zipCode;
+    private List<Phone> phones;
+    ...
+}
+```
+[cassandra driver object mapper](https://docs.datastax.com/en/developer/python-dse-driver/2.11/object_mapper)
 
+```python
+# python
+class Videos(Model):
+    __keyspace__ = "killrvideo"
+    __table_name__ = "videos"  # optional
+    uuid = columns.UUID( primary_key=True, default=uuid.uuid4) # partition
+    txn_id = columns.UUID( )
+    side_note = columns.Text(index=True) # clustering 
+    tags = columns.Set(columns.Text()) 
+    addresses = columns.List(columns.Text()) 
+    phone_nos = columns.Map(columns.Text(), columns.BigInt()) 
+    created_at = columns.DateTime(index=True, default=datetime.now)
+    
+connection.setup(['127.0.0.1'], "cqlengine", protocol_version=3) # cqlengine -> default keyspace mandatory argument 
+
+# create empty object and set values one by one all the required attrs
+v = Videos()    
+v.phone_nos = {"personal": 1111111111, "office": 123456}
+v.addresses = ["adderess 1", "address 2"]
+v.side_note = "sample videos"
+v.txn_id = uuid.uuid4()
+v.tags = {"sample2", "test2",}
+v.save() 
+               # or
+# create in one line 
+Videos.objects.create( tags = {"sample2", "test2",}, txn_id = uuid.uuid4(), 
+    side_note = "Sample videos", addresses = ["adderess 1"], phone_nos = \
+    {"personal": 1111111111, "office": 123456}) 
+    
+# filtering 
+
+```
 
 
 
