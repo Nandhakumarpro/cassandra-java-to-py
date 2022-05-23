@@ -88,6 +88,33 @@ for row in rs:
 fname = row[0]
 lanme = rown[1]
 ```
+```java
+// java
+// 1.Initialize statement using ?Or :variable as variable placeholders in the CQL:
+PreparedStatement prepared = session.prepare( "insert into product (sku, description) values (?, ?)")
+//; Or:
+PreparedStatement prepared = session.prepare( "insert into product (sku, description) values (:sku, :description)");
+// 2.Bind the statement with bind() method of PrepareStatementobject:
+BoundStatement bound = prepared.bind("234827", "Mouse");
+// 3.Execute statement using execute() method of session object: 
+session.execute(bound); 
+// Nested example:
+session.execute(prepared.bind("234827", "Mouse"));
+```
+```python
+#python 
+prepared = session.prepare( "insert into product (sku, description) values (?, ?)")
+         # (or)
+prepared = session.prepare( "insert into product (sku, description) values (:sku, :description)")
+
+bound = prepared.bind(("234827", "Mouse")); 
+       # (or)
+bound = prepared.bind({"sku": "234827", "description": "Mouse"}); 
+session.execute(bound); 
+```
+
+
+
 
 
 
