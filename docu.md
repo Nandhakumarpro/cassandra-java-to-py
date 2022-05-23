@@ -4,7 +4,7 @@ from cassandra.cluster import Cluster
 from cassandra.policies import DCAwareRoundRobinPolicy , WhiteListRoundRobinPolicy
 from cassandra.cluster import ExecutionProfile
 from cassandra.cqlengine.management import query
-from cassandra.query import BatchStatement, SimpleStatement
+from cassandra.query import BatchStatement, SimpleStatement, ValueSequence
 ```
 
 ```java
@@ -38,7 +38,7 @@ session = cluster.connect(keyspace)
 ```java
 // java 
 Cluster cluster = Cluster.builder().addContactPoint("127.0.0.1")
-    .withLoadBalancingPolicy(newDCAwareRoundRobinPolicy()).build();
+    .withLoadBalancingPolicy(new DCAwareRoundRobinPolicy()).build();
 ```
 ```python 
 # python 
@@ -47,19 +47,46 @@ cluster = Cluster(contact_points=contact_points, execution_profiles={"node1": ex
 ```
 
 ```java
-SimpleStatementstatement = new SimpleStatement( "SELECT userid FROM user WHERE lastname= 'Smith'");
-session.execute(statement);
+// java
+// 1.Without parameter  placeholder:
+Statement statement =new SimpleStatement("select * from t1 where c1 = 5");
+//2.With parameter  placeholder:
+Statement statement =new SimpleStatement("select * from t1 where c1 = ?", 5);
 ```
 ```python
-name = 'Smith'
-simple_statement = SimpleStatement( "SELECT userid FROM user WHERE lastname= %s", (name,)) 
-session.execute(simple_statement);
+# python
+# 1.Without parameter  placeholder:
+statement = SimpleStatement("select * from t1 where c1 = 5");
+
+# 2.With parameter  placeholder:
+statement = SimpleStatement("select * from t1 where c1 = %s");
+values = (5,)
+session.execute(statement, parameters=[ValueSequence(values)])
 ```
 ```java
-
+// java
+// Named Syntax (field names):
+ResultSet rs= session.execute("SELECT * FROM names");
+for(Row row : rs) {
+    String fname= row.getString("fname");
+    String lname= row.getString("lname");  
+    System.out.println("Name: " + fname+ " " + lname);
+}
+//Positional Syntax (column index):
+String fname= row.getString(0);
+String lname= row.getString(1);
 ```
-
 ```python
+# python
+# Named Syntax (field names):
+rs= session.execute("SELECT * FROM names");
+for row in rs:
+    fname = row.fname
+    lname = row.lname
+    print("Name: " + fname + " " + lname);
+# Positional Syntax (column index):
+fname = row[0]
+lanme = rown[1]
 ```
 
 
