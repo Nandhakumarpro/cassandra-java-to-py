@@ -28,5 +28,5 @@ DseSessionsession = cluster.connect(keyspace);
 contact_points = ['127.0.0.1']  
 keyspace = 'killrvideo'
 cluster = Cluster(contact_points=contact_points)
-session = cluster.connect('killrvideo')
+session = cluster.connect(keyspace)
 ```
