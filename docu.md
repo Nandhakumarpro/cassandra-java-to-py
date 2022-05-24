@@ -1,6 +1,6 @@
 ```python
 # common imports 
-from cassandra.cluster import Cluster
+from cassandra.cluster import Cluster, HostDistance
 from cassandra.policies import DCAwareRoundRobinPolicy , WhiteListRoundRobinPolicy
 from cassandra.cluster import ExecutionProfile
 from cassandra.cqlengine.management import query
@@ -11,6 +11,8 @@ from cassandra.cqlengine import connection
 from datetime import datetime
 from cassandra.cqlengine.management import sync_table
 from cassandra.cqlengine.models import Model
+from cassandra.cqlengine.query import SimpleStatement, ContextQuery, DeleteStatement,\
+    SelectStatement, UpdateStatement, InsertStatement
 ```
 
 ```java
@@ -62,8 +64,24 @@ DseClustercluster = DseCluster.builder() .addContactPoint("127.0.0.1")
 ```
 ```python
 # python 
-
+cluster = Cluster( contact_points=["127.0.0.1"], load_balancing_policy=TokenAwarePolicy(DCAwareRoundRobinPolicy("DC-West")))
 ```
+```java
+// java
+DseCluster cluster =DseCluster.builder().addContactPoints("localhost")
+    .withPoolingOptions(new PoolingOptions().setConnectionsPerHost(HostDistance.LOCAL,1,4)
+    .setMaxRequestsPerConnection(HostDistance.LOCAL,800)
+    .setNewConnectionThreshold(HostDistance.LOCAL, 100))
+    .build();
+```
+
+```python
+# python 
+cluster = Cluster( contact_points=["localhost"], protocol_version=2) 
+cluster.set_max_connections_per_host(HostDistance, 4) # protocol version 1&2 only support
+clust.set_max_requests_per_connection(HostDistance.LOCAL, 800) # protocol version 1&2 only support
+```
+
 ```java
 // java
 // 1.Without parameter  placeholder:
@@ -141,10 +159,10 @@ public class Address{
     ...
 }
 ```
-[cassandra driver object mapper](https://docs.datastax.com/en/developer/python-dse-driver/2.11/object_mapper)
 
 ```python
 # python
+# object mapper class 
 
 connection.register_connection('cluster1', ['127.0.0.1'])
 
@@ -177,11 +195,14 @@ Videos.objects.create( tags = {"sample2", "test2",}, txn_id = uuid.uuid4(),
     {"personal": 1111111111, "office": 123456}) 
     
 # filtering 
-
+dt_cond = query.WhereClause( "created_at", query.GreaterThanOrEqualOperator(), datetime.now())
+uuid_cond = query.WhereClause( "uuid", query.EqualsOperator(), uuid.uuid4()) # 
+for obj in Videos.objects.allow_filtering().filter(uuid_cond, dt_cond).all():
+    print("tags--->", obj.tags, "addresses--->", obj.addresses)
 ```
 useful links:
 [connection register](https://docs.datastax.com/en/developer/python-dse-driver/2.4/cqlengine/connections/)
-
+[cassandra driver object mapper](https://docs.datastax.com/en/developer/python-dse-driver/2.11/object_mapper)
 
 
 
