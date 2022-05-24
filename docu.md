@@ -54,7 +54,16 @@ Cluster cluster = Cluster.builder().addContactPoint("127.0.0.1")
 exec_profile = ExecutionProfile(load_balancing_policy= DCAwareRoundRobinPolicy())
 cluster = Cluster(contact_points=contact_points, execution_profiles={"node1": exec_prof})
 ```
+```java
+// java
+DseClustercluster = DseCluster.builder() .addContactPoint("127.0.0.1") 
+    .withLoadBalancingPolicy(new TokenAwarePolicy(
+    new DCAwareRoundRobinPolicy("DC-West"));
+```
+```python
+# python 
 
+```
 ```java
 // java
 // 1.Without parameter  placeholder:
@@ -136,8 +145,12 @@ public class Address{
 
 ```python
 # python
+
+connection.register_connection('cluster1', ['127.0.0.1'])
+
 class Videos(Model):
     __keyspace__ = "killrvideo"
+    __connection__ = "cluster1"
     __table_name__ = "videos"  # optional
     uuid = columns.UUID( primary_key=True, default=uuid.uuid4) # partition
     txn_id = columns.UUID( )
@@ -147,7 +160,7 @@ class Videos(Model):
     phone_nos = columns.Map(columns.Text(), columns.BigInt()) 
     created_at = columns.DateTime(index=True, default=datetime.now)
     
-connection.setup(['127.0.0.1'], "cqlengine", protocol_version=3) # cqlengine -> default keyspace mandatory argument 
+sync_table(Vidoes)
 
 # create empty object and set values one by one all the required attrs
 v = Videos()    
@@ -166,7 +179,8 @@ Videos.objects.create( tags = {"sample2", "test2",}, txn_id = uuid.uuid4(),
 # filtering 
 
 ```
-
+useful links:
+[connection register](https://docs.datastax.com/en/developer/python-dse-driver/2.4/cqlengine/connections/)
 
 
 
