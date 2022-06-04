@@ -76,6 +76,20 @@ schema = StructType([StructField("video_id", StringType(), True),
 videos = spark.read.option("header", "true").option("inferSchema", 
     "true").schema(schema).csv("file:///videos-v2.csv")
 videos.printSchema() 
+```
 
+```scala
+// scala
+spark.sparkContext.textFile("file:///video-years.csv").flatMap(_.split(",")
+    .drop(2)).map((_,1)).reduceByKey(_ + _).collect.foreach(println)
+```
+```python
+# python
 
 ```
+
+
+
+
+
+
