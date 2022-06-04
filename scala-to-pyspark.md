@@ -6,7 +6,9 @@ import numpy as np
 from cassandra.cluster import Cluster
 from pyspark.sql.types import StructType,StructField, StringType, IntegerType,\
     ArrayType, DoubleType, TimestampType
-cluster = Clusrter()
+ from pyspark.sql.functions import array_contains, lower, col
+
+cluster = Cluster()
 session = cluster.connect()
 session.set_keyspace("killrvideo") 
 
@@ -101,10 +103,32 @@ spark.read.format("org.apache.spark.sql.cassandra").options(table="videos",
     keyspace="killrvideo").load().filter(col("release_year")==2015)
     .select("title").limit(5).collect() 
 ```
+```scala
+// scala
+spark.sparkContext.cassandraTable("killrvideo","videos_by_actor").where("actor = 'Johnny 
+    Depp'").filter(row => row.getString("title").toLowerCase.contains("pirate"))
+    .map(row => (row.getString("title"), row.getInt("release_year"), 
+    row.getFloat("avg_rating"))).collect.foreach(println)
+```
 
+```python
+# python
+videos_df = spark.read.format("org.apache.spark.sql.cassandra").options(table="videos",
+    keyspace="killrvideo").load() 
+videos_df.filter(videos_df.title.contains("Alice")).limit(5).rdd.map( lambda row: (str(row.title), int(row.release_year))).collect()
+```
+```scala
+// scala
+spark.sparkContext.cassandraTable("killrvideo","videos_by_actor").where("actor = 'Johnny 
+    Depp'").filter(row =>row.getSet[String]("genres").contains("Adventure") &&
+    row.getFloat("avg_rating") >= 6.2).map(row => (row.getString("title"),
+    row.getInt("release_year"), row.getFloat("avg_rating"))).collect.foreach(println)
+```
+```python
+# python
 
-
-
+    
+```
 
 
 
