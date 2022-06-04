@@ -4,7 +4,8 @@
 import pandas as pd 
 import numpy as np 
 from cassandra.cluster import Cluster
-
+from pyspark.sql.types import StructType,StructField, StringType, IntegerType,\
+    ArrayType, DoubleType, TimestampType
 cluster = Clusrter()
 session = cluster.connect()
 session.set_keyspace("killrvideo") 
@@ -43,4 +44,38 @@ session.execute(qry_str)
 # insert dataframe rows to cassandra table
 people_df.write.format("org.apache.spark.sql.cassandra").mode('append')
     .options(table="people", keyspace="killrvideo").save() 
+```
+```scala
+// scala
+import org.apache.spark.sql.types._val 
+meSchema = StructType(Array(StructField("video_id", StringType),
+    StructField("avg_rating",FloatType),
+    StructField("description", StringType),
+    StructField("genres", ArrayType(StringType)),
+    StructField("mpaa_rating",StringType),
+    StructField("release_date", TimestampType),
+    StructField("title", StringType),
+    StructField("type", StringType),
+    StructField("user_id", StringType)))
+    
+val videos = spark.read.option("header", 
+    "true").schema(meSchema).csv("file:///home/ubuntu/data/videos.csv")
+videos.printSchema
+```
+```python
+# python
+schema = StructType([StructField("video_id", StringType(), True), 
+    StructField("avg_rating", DoubleType(), True),
+    StructField("description", StringType(), True),
+    StructField("genres", ArrayType(StringType()), True),
+    StructField("mpaa_rating", StringType(), True),
+    StructField("release_date", TimestampType(), True),
+    StructField("release_year", IntegerType(), True),
+    StructField("title", StringType(), True),
+    StructField("user_id", StringType(), True),]) 
+videos = spark.read.option("header", "true").option("inferSchema", 
+    "true").schema(schema).csv("file:///videos-v2.csv")
+videos.printSchema() 
+
+
 ```
