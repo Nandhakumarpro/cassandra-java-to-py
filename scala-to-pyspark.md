@@ -89,6 +89,19 @@ spark.sparkContext.textFile("file:///video-years.csv")
     .map(lambda x: (int(x.split(",")[2]), 1)).reduceByKey(
     lambda x,y: x + y ).collect() 
 ```
+```scala
+// scala
+spark.sparkContext.cassandraTable("killrvideo", "videos").
+     | where("release_year = 2015").select("title").limit(5).
+     | collect.foreach(println) 
+```
+```python
+# python
+spark.read.format("org.apache.spark.sql.cassandra").options(table="videos",     
+    keyspace="killrvideo").load().filter(col("release_year")==2015)
+    .select("title").limit(5).collect() 
+```
+
 
 
 
