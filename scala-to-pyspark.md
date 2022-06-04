@@ -113,8 +113,8 @@ spark.sparkContext.cassandraTable("killrvideo","videos_by_actor").where("actor =
 
 ```python
 # python
-videos_df = spark.read.format("org.apache.spark.sql.cassandra").options(table="videos",
-    keyspace="killrvideo").load() 
+videos_df = spark.read.format("org.apache.spark.sql.cassandra")
+    .options(table="videos",keyspace="killrvideo").load() 
 videos_df.filter(videos_df.title.contains("Alice")).limit(5).rdd.map( lambda row: (str(row.title), int(row.release_year))).collect()
 ```
 ```scala
@@ -126,9 +126,29 @@ spark.sparkContext.cassandraTable("killrvideo","videos_by_actor").where("actor =
 ```
 ```python
 # python
-
-    
+videos_df = spark.read.format("org.apache.spark.sql.cassandra")
+    .options(table="videos",keyspace="killrvideo").load() 
+videos_df.filter(array_contains(videos_df.genres,"Drama") & 
+    (videos_df.avg_rating>=6.2)).limit(5).rdd.map( 
+    lambda row: (str(row.title), int(row.release_year), 
+    float(row.avg_rating))).collect() 
 ```
+```scala
+// scala
+spark.sparkContext.cassandraTable("killrvideo","videos_by_actor")
+    .where("actor = 'Johnny Depp'").select("release_year")
+    .as((year:Int) => (year,1) ).reduceByKey(_ + _).collect
+    .foreach(println)
+```
+```python
+# python
+videos_df = spark.read.format("org.apache.spark.sql.cassandra")
+    .options(table="videos",keyspace="killrvideo").load() 
+videos_df.filter(array_contains(videos_df.genres,"Drama") & 
+    (videos_df.avg_rating>=6.5)).limit(1000).select("release_year").rdd.map( 
+    lambda row: (int(row.release_year),1) ).reduceByKey( lambda x, y: x+y) .collect() 
+```
+
 
 
 
