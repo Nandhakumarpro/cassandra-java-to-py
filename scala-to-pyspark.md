@@ -85,9 +85,9 @@ spark.sparkContext.textFile("file:///video-years.csv").flatMap(_.split(",")
 ```
 ```python   
 # python
-spark.sparkContext.textFile("file:///video-years.csv").flatMap(
-    lambda x: x.split(",")[2:]).map(lambda x: (x,1)).reduceByKey(
-    lambda x, y: x+y).collect()
+spark.sparkContext.textFile("file:///video-years.csv")
+    .map(lambda x: (int(x.split(",")[2]), 1)).reduceByKey(
+    lambda x,y: x + y ).collect() 
 ```
 
 
