@@ -83,9 +83,11 @@ videos.printSchema()
 spark.sparkContext.textFile("file:///video-years.csv").flatMap(_.split(",")
     .drop(2)).map((_,1)).reduceByKey(_ + _).collect.foreach(println)
 ```
-```python
+```python   
 # python
-
+spark.sparkContext.textFile("file:///video-years.csv").flatMap(
+    lambda x: x.split(",")[2:]).map(lambda x: (x,1)).reduceByKey(
+    lambda x, y: x+y).collect()
 ```
 
 
